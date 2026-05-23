@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MAÉE記録">
+<title>MAÉE お渡し記録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ivory: #F7F4EF;
+    --sand: #E8E1D5;
+    --taupe: #C4B8A8;
+    --charcoal: #3A3530;
+    --espresso: #2A211A;
+    --blush: #D4A89A;
+    --sage: #8A9E8C;
+    --gold: #C4A052;
+    --error: #B05050;
+    --radius: 2px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--ivory);
+    color: var(--espresso);
+    min-height: 100vh;
+    font-size: 14px;
+    font-weight: 300;
+  }
+
+  /* ヘッダー */
+  header {
+    background: var(--espresso);
+    color: var(--ivory);
+    padding: 20px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    font-style: italic;
+  }
+  header .subtitle {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--taupe);
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  /* タブ */
+  nav {
+    display: flex;
+    background: var(--espresso);
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  nav button {
+    flex: 1;
+    padding: 10px 4px;
+    background: none;
+    border: none;
+    color: var(--taupe);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: color 0.2s;
+    position: relative;
+  }
+  nav button.active {
+    color: var(--ivory);
+  }
+  nav button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  /* コンテンツ */
+  .page { display: none; padding: 20px; }
+  .page.active { display: block; }
+
+  /* ---- 記録ページ ---- */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--taupe);
+    margin-bottom: 12px;
+  }
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .pattern-btn {
+    padding: 12px 4px;
+    border: 1px solid var(--sand);
+    background: white;
+    border-radius: var(--radius);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--charcoal);
+    cursor: pointer;
+    text-align: center;
+    line-height: 1.4;
+    transition: all 0.15s;
+  }
+  .pattern-btn.selected {
+    background: var(--espresso);
+    color: var(--ivory);
+    border-color: var(--espresso);
+  }
+  .pattern-btn .pat-name { font-size: 13px; }
+  .pattern-btn .pat-desc { font-size: 9px; color: var(--taupe); margin-top: 2px; }
+  .pattern-btn.selected .pat-desc { color: var(--taupe); }
+
+  .field-group { margin-bottom: 16px; }
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--taupe);
+    margin-bottom: 6px;
+    display: block;
+  }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--sand);
+    border-radius: var(--radius);
+    background: white;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--espresso);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--charcoal);
+  }
+  textarea { resize: none; height: 60px; }
+
+  /* 画像認識エリア */
+  .photo-area {
+    border: 1.5px dashed var(--taupe);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+    background: white;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-area .photo-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-area .photo-hint { font-size: 11px; color: var(--taupe); }
+  .photo-area input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+    border: none; padding: 0;
+  }
+  #preview-container {
+    display: none;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  #preview-container img {
+    height: 60px;
+    width: 60px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--sand);
+  }
+  .ai-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--sage);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .ai-result {
+    background: #F0F4F0;
+    border-radius: var(--radius);
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+    display: none;
+    border-left: 2px solid var(--sage);
+  }
+
+  /* 渡し先リスト（複数・集団用） */
+  .recipient-list { margin-bottom: 12px; }
+  .recipient-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .recipient-row input { flex: 1; }
+  .remove-btn {
+    width: 32px;
+    height: 38px;
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid var(--sand);
+    border-radius: var(--radius);
+    color: var(--taupe);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .add-recipient-btn {
+    width: 100%;
+    padding: 8px;
+    background: none;
+    border: 1px dashed var(--sand);
+    border-radius: var(--radius);
+    color: var(--taupe);
+    font-size: 12px;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+
+  /* 品番入力 */
+  .items-area { margin-bottom: 16px; }
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .item-row select { font-size: 12px; padding: 10px 8px; }
+  .item-row input { font-size: 13px; }
+
+  /* 保存ボタン */
+  .save-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--espresso);
+    color: var(--ivory);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .save-btn:active { background: var(--charcoal); }
+
+  .msg {
+    text-align: center;
+    padding: 10px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    margin-top: 10px;
+    display: none;
+  }
+  .msg.success { background: #EAF0EA; color: var(--sage); }
+  .msg.error { background: #F5EAEA; color: var(--error); }
+
+  /* ---- 記録一覧 ---- */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .filter-bar input, .filter-bar select {
+    flex: 1;
+    font-size: 13px;
+  }
+  .record-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--sand);
+    position: relative;
+  }
+  .record-card .rec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .rec-date {
+    font-size: 11px;
+    color: var(--taupe);
+    letter-spacing: 0.05em;
+  }
+  .rec-pattern {
+    font-size: 10px;
+    background: var(--sand);
+    color: var(--charcoal);
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.1em;
+  }
+  .rec-recipient {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--espresso);
+    margin-bottom: 4px;
+  }
+  .rec-items {
+    font-size: 12px;
+    color: var(--charcoal);
+    line-height: 1.7;
+  }
+  .rec-memo {
+    font-size: 11px;
+    color: var(--taupe);
+    margin-top: 4px;
+    font-style: italic;
+  }
+  .rec-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--taupe);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 6px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--taupe);
+    font-size: 13px;
+  }
+
+  /* CSVエクスポート */
+  .export-btn {
+    width: 100%;
+    padding: 11px;
+    background: white;
+    border: 1px solid var(--charcoal);
+    border-radius: var(--radius);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    color: var(--charcoal);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  /* ---- 設定 ---- */
+  .setting-group {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--sand);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .setting-item {
+    padding: 14px;
+    border-bottom: 1px solid var(--sand);
+  }
+  .setting-item:last-child { border-bottom: none; }
+  .setting-item label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--taupe);
+    margin-bottom: 8px;
+  }
+  .api-key-row {
+    display: flex;
+    gap: 8px;
+  }
+  .api-key-row input { flex: 1; font-size: 12px; }
+  .save-key-btn {
+    padding: 10px 14px;
+    background: var(--espresso);
+    color: var(--ivory);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .danger-btn {
+    width: 100%;
+    padding: 11px;
+    background: none;
+    border: 1px solid var(--error);
+    border-radius: var(--radius);
+    color: var(--error);
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: white;
+    border: 1px solid var(--sand);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    color: var(--espresso);
+    display: block;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--taupe);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ローディング */
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .divider {
+    height: 1px;
+    background: var(--sand);
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">MAÉE</div>
+  <div class="subtitle">Delivery Record</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('record')">記録する</button>
+  <button onclick="showPage('list')">一覧</button>
+  <button onclick="showPage('settings')">設定</button>
+</nav>
+
+<!-- ===== 記録ページ ===== -->
+<div id="page-record" class="page active">
+
+  <div class="section-label">渡しパターン</div>
+  <div class="pattern-grid">
+    <button class="pattern-btn selected" onclick="selectPattern('個別')" id="pat-個別">
+      <div class="pat-name">個別</div>
+      <div class="pat-desc">1商品→1人</div>
+    </button>
+    <button class="pattern-btn" onclick="selectPattern('複数')" id="pat-複数">
+      <div class="pat-name">複数</div>
+      <div class="pat-desc">商品グループ→人グループ</div>
+    </button>
+    <button class="pattern-btn" onclick="selectPattern('集団')" id="pat-集団">
+      <div class="pat-name">集団</div>
+      <div class="pat-desc">編集部・施設など</div>
+    </button>
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">日付</label>
+    <input type="date" id="rec-date">
+  </div>
+
+  <!-- 渡し先（個別） -->
+  <div id="single-recipient-area">
+    <div class="field-group">
+      <label class="field-label">渡し先</label>
+      <input type="text" id="single-recipient" placeholder="田中花子">
+    </div>
+  </div>
+
+  <!-- 渡し先（複数・集団） -->
+  <div id="multi-recipient-area" style="display:none">
+    <div class="section-label">渡し先リスト</div>
+    <div class="recipient-list" id="recipient-list"></div>
+    <button class="add-recipient-btn" onclick="addRecipient()">＋ 渡し先を追加</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 写真認識 -->
+  <div class="section-label">写真から自動認識（任意）</div>
+  <div class="photo-area" id="photo-area">
+    <div class="photo-icon">📷</div>
+    <div class="photo-hint">タップして写真を選ぶ（複数OK）</div>
+    <input type="file" accept="image/*" multiple id="photo-input" onchange="onPhotoSelect(event)">
+  </div>
+  <div id="preview-container" style="display:flex"></div>
+  <button class="ai-btn" id="ai-btn" onclick="runAI()">🤖 AIで品番・色・数量を認識</button>
+  <div class="ai-result" id="ai-result"></div>
+
+  <!-- 品番入力 -->
+  <div class="section-label">品番・色・数量</div>
+  <div class="items-area" id="items-area"></div>
+  <button class="add-recipient-btn" onclick="addItem()">＋ 品番を追加</button>
+
+  <div class="field-group">
+    <label class="field-label">メモ（任意）</label>
+    <textarea id="rec-memo" placeholder="サイズ、要望など"></textarea>
+  </div>
+
+  <button class="save-btn" onclick="saveRecord()">保 存</button>
+  <div class="msg" id="save-msg"></div>
+</div>
+
+<!-- ===== 一覧ページ ===== -->
+<div id="page-list" class="page">
+  <button class="export-btn" onclick="exportCSV()">📄 CSVエクスポート</button>
+
+  <div class="filter-bar">
+    <input type="text" id="filter-text" placeholder="名前・品番で検索" oninput="renderList()">
+    <select id="filter-pattern" onchange="renderList()">
+      <option value="">すべて</option>
+      <option value="個別">個別</option>
+      <option value="複数">複数</option>
+      <option value="集団">集団</option>
+    </select>
+  </div>
+
+  <div id="record-list"></div>
+</div>
+
+<!-- ===== 設定ページ ===== -->
+<div id="page-settings" class="page">
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <span class="stat-num" id="stat-total">0</span>
+      <span class="stat-label">総記録数</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="stat-people">0</span>
+      <span class="stat-label">渡し先数</span>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <div class="setting-item">
+      <label>OpenAI APIキー</label>
+      <div class="api-key-row">
+        <input type="password" id="api-key-input" placeholder="sk-...">
+        <button class="save-key-btn" onclick="saveApiKey()">保存</button>
+      </div>
+      <div style="font-size:10px;color:var(--taupe);margin-top:6px;">
+        写真からAI認識するために必要。localStorageに保存されます。
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="danger-btn" onclick="clearAll()">すべての記録を削除</button>
+  <div class="msg" id="settings-msg" style="margin-top:10px"></div>
+</div>
+
+<script>
+// ===== 商品マスター =====
+const PRODUCTS = [
+  // コットンリブ
+  {label:'コットンリブ／ピンク', code:'1056'},
+  {label:'コットンリブ／レッド', code:'1033'},
+  {label:'コットンリブ／パウダーピンク', code:''},
+  {label:'コットンリブ／パウダーブルー', code:''},
+  {label:'コットンリブ／オフホワイト', code:''},
+  {label:'コットンリブ／ダークグレー', code:''},
+  {label:'コットンリブ／ピュアブラック', code:''},
+  {label:'コットンリブ／ミディアムグレー', code:''},
+  {label:'コットンリブ／ライトグレー', code:''},
+  {label:'コットンリブ／ディープボルドー', code:''},
+  {label:'コットンリブ／ナチュラルブラウン', code:''},
+  {label:'コットンリブ／ピンク(コラボ)', code:''},
+  {label:'コットンリブ／ライラック', code:''},
+  // コットン
+  {label:'コットン／ネイビー', code:'1051'},
+  {label:'コットン／ピュアブラック', code:''},
+  {label:'コットン／チャコールグレー', code:''},
+  {label:'コットン／ミモザイエロー', code:''},
+  // コットンシアー
+  {label:'コットンシアー／プリュムモカ', code:''},
+  {label:'コットンシアー／フェザーブラック', code:''},
+  {label:'コットンシアー／ダブグレー', code:''},
+  {label:'コットンシアー／スワンホワイト', code:''},
+  {label:'コットンシアー／セレストブルー', code:''},
+  // シアー
+  {label:'シアー／ベージュ', code:'1046'},
+  {label:'シアー／ブラック', code:'1050'},
+  {label:'シアー／チョコレート', code:'1044'},
+  {label:'シアー／ホワイト', code:'1045'},
+  {label:'シアー／ナチュラルベージュ', code:''},
+  {label:'シアー／チャコール', code:''},
+  {label:'シアー／バーガンディ', code:''},
+  // グリッターリブ
+  {label:'グリッターリブ／ゴールド', code:'1067'},
+  {label:'グリッターリブ／シルバー', code:''},
+  // ライン
+  {label:'ライン／チャコール×レッド', code:''},
+  {label:'ライン／ネイビー×シルバーラメ', code:''},
+  // プレミアムウール
+  {label:'プレミアムウール／オートミール', code:''},
+  {label:'プレミアムウール／フォレストグリーン', code:''},
+  {label:'プレミアムウール／フォギーチャコール', code:''},
+  {label:'その他', code:''},
+];
+
+// ===== State =====
+let currentPattern = '個別';
+let selectedPhotos = []; // File objects
+let records = [];
+
+function loadData() {
+  try {
+    records = JSON.parse(localStorage.getItem('maee_records') || '[]');
+  } catch(e) { records = []; }
+  const apiKey = localStorage.getItem('maee_api_key') || '';
+  const keyInput = document.getElementById('api-key-input');
+  if (keyInput && apiKey) keyInput.value = apiKey;
+}
+
+function saveData() {
+  localStorage.setItem('maee_records', JSON.stringify(records));
+}
+
+// ===== ページ切替 =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'list') renderList();
+  if (name === 'settings') renderStats();
+}
+
+// ===== パターン選択 =====
+function selectPattern(p) {
+  currentPattern = p;
+  document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('pat-' + p).classList.add('selected');
+
+  const single = document.getElementById('single-recipient-area');
+  const multi = document.getElementById('multi-recipient-area');
+
+  if (p === '個別') {
+    single.style.display = 'block';
+    multi.style.display = 'none';
+  } else {
+    single.style.display = 'none';
+    multi.style.display = 'block';
+    if (document.getElementById('recipient-list').children.length === 0) {
+      addRecipient();
+    }
+  }
+}
+
+// ===== 渡し先追加 =====
+let recipientCount = 0;
+function addRecipient() {
+  recipientCount++;
+  const id = 'recip-' + recipientCount;
+  const row = document.createElement('div');
+  row.className = 'recipient-row';
+  row.id = id;
+  row.innerHTML = `
+    <input type="text" placeholder="氏名">
+    <button class="remove-btn" onclick="removeRow('${id}')">×</button>
+  `;
+  document.getElementById('recipient-list').appendChild(row);
+}
+
+function removeRow(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ===== 品番追加 =====
+let itemCount = 0;
+function addItem() {
+  itemCount++;
+  const id = 'item-' + itemCount;
+  const area = document.getElementById('items-area');
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.id = id;
+
+  const opts = PRODUCTS.map(p =>
+    `<option value="${p.label}">${p.label}${p.code ? '('+p.code+')' : ''}</option>`
+  ).join('');
+
+  row.innerHTML = `
+    <select>${opts}</select>
+    <input type="text" placeholder="数量" style="max-width:70px">
+    <button class="remove-btn" onclick="removeRow('${id}')">×</button>
+  `;
+  area.appendChild(row);
+}
+
+// ===== 写真選択 =====
+function onPhotoSelect(e) {
+  selectedPhotos = Array.from(e.target.files);
+  const container = document.getElementById('preview-container');
+  container.innerHTML = '';
+  container.style.display = selectedPhotos.length ? 'flex' : 'none';
+
+  selectedPhotos.forEach(file => {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    container.appendChild(img);
+  });
+
+  const aiBtn = document.getElementById('ai-btn');
+  aiBtn.style.display = selectedPhotos.length ? 'block' : 'none';
+}
+
+// ===== AI認識 =====
+async function runAI() {
+  const apiKey = localStorage.getItem('maee_api_key');
+  if (!apiKey) {
+    alert('設定画面でOpenAI APIキーを登録してください');
+    return;
+  }
+  if (!selectedPhotos.length) return;
+
+  const btn = document.getElementById('ai-btn');
+  const resultDiv = document.getElementById('ai-result');
+  btn.innerHTML = '<span class="spinner"></span>認識中...';
+  btn.disabled = true;
+
+  try {
+    // 画像をbase64に変換
+    const imageContents = await Promise.all(selectedPhotos.map(async file => {
+      const b64 = await toBase64(file);
+      return {
+        type: 'image_url',
+        image_url: { url: b64 }
+      };
+    }));
+
+    const productList = PRODUCTS.map(p =>
+      `${p.label}${p.code ? '(品番:'+p.code+')' : ''}`
+    ).join('\n');
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `この写真はMAÉEという靴下ブランドの商品（靴下）です。
+写真に写っている靴下の品番・色・数量を認識してください。
+
+【商品マスター】
+${productList}
+
+写真に名前や日付が書いてある場合は、それも読み取ってください。
+
+以下のJSON形式のみで回答してください（他のテキスト不要）：
+{
+  "name": "名前（写真にあれば）",
+  "date": "日付（写真にあれば、YYYY-MM-DD形式）",
+  "items": [
+    {"product": "商品名", "quantity": 数量}
+  ],
+  "memo": "その他気づいたこと"
+}`
+            },
+            ...imageContents
+          ]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'APIエラー');
+    }
+
+    const data = await response.json();
+    const text = data.choices[0].message.content.trim();
+
+    // JSON解析
+    let parsed;
+    try {
+      const clean = text.replace(/```json|```/g, '').trim();
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      resultDiv.innerHTML = text.replace(/\n/g, '<br>');
+      resultDiv.style.display = 'block';
+      btn.innerHTML = '🤖 AIで品番・色・数量を認識';
+      btn.disabled = false;
+      return;
+    }
+
+    // 名前・日付を自動入力
+    if (parsed.name && currentPattern === '個別') {
+      document.getElementById('single-recipient').value = parsed.name;
+    }
+    if (parsed.date) {
+      document.getElementById('rec-date').value = parsed.date;
+    }
+
+    // 品番を自動追加
+    if (parsed.items && parsed.items.length) {
+      document.getElementById('items-area').innerHTML = '';
+      itemCount = 0;
+      parsed.items.forEach(item => {
+        addItem();
+        const rows = document.getElementById('items-area').children;
+        const lastRow = rows[rows.length - 1];
+        const sel = lastRow.querySelector('select');
+        const inp = lastRow.querySelector('input');
+        // 最も近い商品を選択
+        const match = PRODUCTS.find(p =>
+          p.label.includes(item.product) || item.product.includes(p.label.split('／')[1] || '')
+        );
+        if (match) sel.value = match.label;
+        inp.value = item.quantity || 1;
+      });
+    }
+
+    // 結果表示
+    let html = '<strong>認識結果</strong><br>';
+    if (parsed.name) html += `名前: ${parsed.name}<br>`;
+    if (parsed.date) html += `日付: ${parsed.date}<br>`;
+    if (parsed.items) {
+      parsed.items.forEach(i => {
+        html += `• ${i.product} × ${i.quantity}<br>`;
+      });
+    }
+    if (parsed.memo) html += `メモ: ${parsed.memo}`;
+    resultDiv.innerHTML = html;
+    resultDiv.style.display = 'block';
+
+  } catch(e) {
+    alert('エラー: ' + e.message);
+  }
+
+  btn.innerHTML = '🤖 AIで品番・色・数量を認識';
+  btn.disabled = false;
+}
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ===== 保存 =====
+function saveRecord() {
+  const date = document.getElementById('rec-date').value;
+  if (!date) { showMsg('save-msg', '日付を入力してください', 'error'); return; }
+
+  // 品番収集
+  const itemRows = document.getElementById('items-area').querySelectorAll('.item-row');
+  const items = [];
+  itemRows.forEach(row => {
+    const sel = row.querySelector('select');
+    const inp = row.querySelector('input');
+    if (sel && inp && inp.value) {
+      items.push({ product: sel.value, quantity: inp.value });
+    }
+  });
+
+  if (currentPattern === '個別') {
+    const name = document.getElementById('single-recipient').value.trim();
+    if (!name) { showMsg('save-msg', '渡し先を入力してください', 'error'); return; }
+    records.unshift({
+      id: Date.now(),
+      date,
+      pattern: '個別',
+      recipients: [name],
+      items,
+      memo: document.getElementById('rec-memo').value.trim()
+    });
+
+  } else if (currentPattern === '複数') {
+    const recipRows = document.getElementById('recipient-list').querySelectorAll('.recipient-row');
+    const recipients = [];
+    recipRows.forEach(row => {
+      const inp = row.querySelector('input');
+      if (inp && inp.value.trim()) recipients.push(inp.value.trim());
+    });
+    if (!recipients.length) { showMsg('save-msg', '渡し先を入力してください', 'error'); return; }
+    records.unshift({
+      id: Date.now(),
+      date,
+      pattern: '複数',
+      recipients,
+      items,
+      memo: document.getElementById('rec-memo').value.trim()
+    });
+
+  } else {
+    // 集団
+    const recipRows = document.getElementById('recipient-list').querySelectorAll('.recipient-row');
+    const recipients = [];
+    recipRows.forEach(row => {
+      const inp = row.querySelector('input');
+      if (inp && inp.value.trim()) recipients.push(inp.value.trim());
+    });
+    if (!recipients.length) { showMsg('save-msg', '渡し先を入力してください', 'error'); return; }
+    records.unshift({
+      id: Date.now(),
+      date,
+      pattern: '集団',
+      recipients,
+      items,
+      memo: document.getElementById('rec-memo').value.trim()
+    });
+  }
+
+  saveData();
+  showMsg('save-msg', '保存しました', 'success');
+  resetForm();
+}
+
+function resetForm() {
+  document.getElementById('rec-date').value = '';
+  document.getElementById('single-recipient').value = '';
+  document.getElementById('rec-memo').value = '';
+  document.getElementById('recipient-list').innerHTML = '';
+  document.getElementById('items-area').innerHTML = '';
+  document.getElementById('preview-container').innerHTML = '';
+  document.getElementById('preview-container').style.display = 'none';
+  document.getElementById('ai-btn').style.display = 'none';
+  document.getElementById('ai-result').style.display = 'none';
+  document.getElementById('photo-input').value = '';
+  selectedPhotos = [];
+  itemCount = 0;
+  recipientCount = 0;
+}
+
+// ===== 一覧 =====
+function renderList() {
+  const filterText = (document.getElementById('filter-text').value || '').trim().toLowerCase();
+  const filterPattern = document.getElementById('filter-pattern').value;
+
+  let filtered = records.filter(r => {
+    const patOk = !filterPattern || r.pattern === filterPattern;
+    const textOk = !filterText ||
+      r.recipients.some(n => n.toLowerCase().includes(filterText)) ||
+      (r.items || []).some(i => i.product.toLowerCase().includes(filterText)) ||
+      r.date.includes(filterText);
+    return patOk && textOk;
+  });
+
+  const container = document.getElementById('record-list');
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state">記録がありません</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(r => `
+    <div class="record-card">
+      <button class="rec-delete" onclick="deleteRecord(${r.id})">×</button>
+      <div class="rec-header">
+        <span class="rec-date">${r.date}</span>
+        <span class="rec-pattern">${r.pattern}</span>
+      </div>
+      <div class="rec-recipient">${r.recipients.join('、')}</div>
+      <div class="rec-items">${(r.items||[]).map(i => `${i.product} × ${i.quantity}`).join('<br>')}</div>
+      ${r.memo ? `<div class="rec-memo">${r.memo}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function deleteRecord(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  records = records.filter(r => r.id !== id);
+  saveData();
+  renderList();
+}
+
+// ===== CSV =====
+function exportCSV() {
+  if (!records.length) { alert('記録がありません'); return; }
+
+  // 最大品番数を取得
+  const maxItems = Math.max(...records.map(r => (r.items||[]).length), 1);
+  const itemHeaders = Array.from({length: maxItems}, (_, i) => `品番${String.fromCharCode(65+i)},数量${String.fromCharCode(65+i)}`).join(',');
+
+  const header = `日付,パターン,渡し先,${itemHeaders},メモ`;
+  const rows = [];
+
+  records.forEach(r => {
+    const items = r.items || [];
+    const itemCols = Array.from({length: maxItems}, (_, i) =>
+      items[i] ? `"${items[i].product}",${items[i].quantity}` : ','
+    ).join(',');
+
+    if (r.recipients.length === 1) {
+      rows.push(`${r.date},${r.pattern},"${r.recipients[0]}",${itemCols},"${r.memo||''}"`);
+    } else {
+      rows.push(`${r.date},${r.pattern},"${r.recipients[0]}",${itemCols},"${r.memo||''}"`);
+      for (let i = 1; i < r.recipients.length; i++) {
+        rows.push(`〃,〃,"${r.recipients[i]}",${Array(maxItems*2).fill('').join(',')},`);
+      }
+    }
+  });
+
+  const csv = '\uFEFF' + header + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `maee_records_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+
+// ===== 設定 =====
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) { alert('APIキーを入力してください'); return; }
+  localStorage.setItem('maee_api_key', key);
+  showMsg('settings-msg', 'APIキーを保存しました', 'success');
+}
+
+function renderStats() {
+  document.getElementById('stat-total').textContent = records.length;
+  const allPeople = new Set();
+  records.forEach(r => r.recipients.forEach(n => allPeople.add(n)));
+  document.getElementById('stat-people').textContent = allPeople.size;
+}
+
+function clearAll() {
+  if (!confirm('すべての記録を削除します。元に戻せません。よろしいですか？')) return;
+  records = [];
+  saveData();
+  renderStats();
+  showMsg('settings-msg', '削除しました', 'success');
+}
+
+// ===== ユーティリティ =====
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ===== 初期化 =====
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  // 今日の日付をデフォルトに
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth()+1).padStart(2,'0');
+  const d = String(today.getDate()).padStart(2,'0');
+  document.getElementById('rec-date').value = `${y}-${m}-${d}`;
+
+  // 最初の品番行を追加
+  addItem();
+});
+</script>
+</body>
+</html>
