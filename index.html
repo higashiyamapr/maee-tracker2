@@ -585,13 +585,13 @@
 
   <div class="setting-group">
     <div class="setting-item">
-      <label>OpenAI APIキー</label>
+      <label>Gemini APIキー</label>
       <div class="api-key-row">
         <input type="password" id="api-key-input" placeholder="sk-...">
         <button class="save-key-btn" onclick="saveApiKey()">保存</button>
       </div>
       <div style="font-size:10px;color:var(--taupe);margin-top:6px;">
-        写真からAI認識するために必要。localStorageに保存されます。
+        Google AI StudioのGemini APIキー。無料枠あり。localStorageに保存されます。
       </div>
     </div>
   </div>
@@ -763,7 +763,7 @@ function onPhotoSelect(e) {
 async function runAI() {
   const apiKey = localStorage.getItem('maee_api_key');
   if (!apiKey) {
-    alert('設定画面でOpenAI APIキーを登録してください');
+    alert('設定画面でGemini APIキーを登録してください');
     return;
   }
   if (!selectedPhotos.length) return;
@@ -831,7 +831,7 @@ ${productList}
     }
 
     const data = await response.json();
-    const text = data.choices[0].message.content.trim();
+    const text = data.candidates[0].content.parts[0].text.trim();
 
     // JSON解析
     let parsed;
