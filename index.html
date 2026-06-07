@@ -835,6 +835,11 @@ async function runAI() {
         );
         if (match) sel.value = match.label;
         inp.value = item.quantity || 1;
+        // サイズはメモ欄に追記
+        if (item.size) {
+          const memo = document.getElementById('rec-memo');
+          memo.value = memo.value ? memo.value + '\n' + 'サイズ: ' + item.size : 'サイズ: ' + item.size;
+        }
       });
     }
 
@@ -844,7 +849,7 @@ async function runAI() {
     if (parsed.date) html += `日付: ${parsed.date}<br>`;
     if (parsed.items) {
       parsed.items.forEach(i => {
-        html += `• ${i.product} × ${i.quantity}<br>`;
+        html += `• ${i.product} ${i.size ? i.size : ''} × ${i.quantity}<br>`;
       });
     }
     if (parsed.memo) html += `メモ: ${parsed.memo}`;
